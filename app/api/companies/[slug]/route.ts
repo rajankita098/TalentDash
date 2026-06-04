@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { SalaryRecord } from '@/types'; // Import your established structural data model contract type
 
 export async function GET(
   request: NextRequest,
@@ -24,22 +23,21 @@ export async function GET(
       );
     }
 
-    // --- COMPUTING TRUE MEDIAN NODES (SCHEMA SPECIFIC) ---
     const salaries = company.salaries;
     const count = salaries.length;
 
     const getMedian = (values: number[]) => {
       if (values.length === 0) return 0;
-      values.sort((a, b) => a - b);
-      const half = Math.floor(values.length / 2);
-      if (values.length % 2 !== 0) return values[half];
-      return (values[half - 1] + values[half]) / 2.0;
+      const sorted = [...values].sort((a, b) => a - b);
+      const half = Math.floor(sorted.length / 2);
+      if (sorted.length % 2 !== 0) return sorted[half];
+      return (sorted[half - 1] + sorted[half]) / 2.0;
     };
 
-    // FIX: Explicitly type 's' as your known SalaryRecord interface to pass the strict checker arrays matrix smoothly!
-    const medianBase = getMedian(salaries.map((s: SalaryRecord) => Number(s.baseSalary)));
-    const medianStock = getMedian(salaries.map((s: SalaryRecord) => Number(s.stock)));
-    const medianTotal = getMedian(salaries.map((s: SalaryRecord) => Number(s.totalCompensation)));
+    // FIX: Convert database bigint values to Numbers safely for your math formulas
+    const medianBase = getMedian(salaries.map((s) => Number(s.baseSalary)));
+    const medianStock = getMedian(salaries.map((s) => Number(s.stock || 0n)));
+    const medianTotal = getMedian(salaries.map((s) => Number(s.totalCompensation)));
 
     const payload = {
       company: {
@@ -54,7 +52,8 @@ export async function GET(
         medianStock,
         medianTotal,
       },
-      salaries: salaries.map((s: SalaryRecord) => ({
+      // Convert your bigint fields to clean string arrays for response transport
+      salaries: salaries.map((s) => ({
         id: s.id,
         role: s.role,
         level: s.level,
@@ -62,24 +61,22 @@ export async function GET(
         currency: s.currency,
         experienceYears: s.experienceYears,
         baseSalary: s.baseSalary.toString(),
-        stock: s.stock.toString(),
+        stock: (s.stock || 0n).toString(),
         totalCompensation: s.totalCompensation.toString(),
       }))
     };
 
-    // --- FS3 CRITICAL: ATTACH EXACT EDGE-PROXY CACHE-CONTROL HEADERS via standard Response ---
+    // --- FS3: ATTACH EDGE-PROXY CACHE-CONTROL HEADERS ---
     return new Response(JSON.stringify(payload), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        // FS3 Rule: Cache at the Edge CDN for 1 hour, serve stale up to 24 hours while revalidating
         'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400',
       },
     });
 
   } catch (error) {
     console.error("Company api pipeline failure:", error);
-    
     return new Response(
       JSON.stringify({ error: true, message: 'Internal server error processing company parameters' }),
       {
