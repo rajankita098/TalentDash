@@ -15,7 +15,7 @@
     "cleanDistDir": true,
     "assetPrefix": "",
     "cacheMaxMemorySize": 52428800,
-    "configOrigin": "default",
+    "configOrigin": "next.config.mjs",
     "useFileSystemPublicRoutes": true,
     "generateEtags": true,
     "pageExtensions": [
@@ -60,7 +60,12 @@
       "dangerouslyAllowSVG": false,
       "contentSecurityPolicy": "script-src 'none'; frame-src 'none'; sandbox;",
       "contentDispositionType": "attachment",
-      "remotePatterns": [],
+      "remotePatterns": [
+        {
+          "protocol": "https",
+          "hostname": "www.vectorlogo.zone"
+        }
+      ],
       "unoptimized": false
     },
     "devIndicators": {
@@ -287,10 +292,17 @@
     },
     "htmlLimitedBots": "[\\w-]+-Google|Google-[\\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight",
     "bundlePagesRouterDependencies": false,
-    "configFileName": "next.config.js",
+    "configFileName": "next.config.mjs",
     "turbopack": {
       "root": "C:\\Users\\rajan\\OneDrive\\Desktop\\talentdash"
-    }
+    },
+    "_originalRedirects": [
+      {
+        "source": "/",
+        "destination": "/salaries",
+        "permanent": true
+      }
+    ]
   },
   "appDir": "C:\\Users\\rajan\\OneDrive\\Desktop\\talentdash",
   "relativeAppDir": "",

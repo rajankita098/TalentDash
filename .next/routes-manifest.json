@@ -10,6 +10,12 @@
       "internal": true,
       "statusCode": 308,
       "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    },
+    {
+      "source": "/",
+      "destination": "/salaries",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/(?:/)?$"
     }
   ],
   "headers": [],

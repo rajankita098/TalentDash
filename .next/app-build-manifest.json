@@ -7,13 +7,12 @@
       "static/chunks/main-app-682b115844d0a6a0.js",
       "static/chunks/app/_not-found/page-1ae50874979a564e.js"
     ],
-    "/layout": [
+    "/api/compare/route": [
       "static/chunks/webpack-1017649d66d1259f.js",
       "static/chunks/4bd1b696-c023c6e3521b1417.js",
       "static/chunks/255-98a0bdaa30757bda.js",
       "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/css/8a62aad5e38982ae.css",
-      "static/chunks/app/layout-f9163511bc5d9bfa.js"
+      "static/chunks/app/api/compare/route-5d7bc62805d0d7bd.js"
     ],
     "/api/companies/[slug]/route": [
       "static/chunks/webpack-1017649d66d1259f.js",
@@ -22,12 +21,13 @@
       "static/chunks/main-app-682b115844d0a6a0.js",
       "static/chunks/app/api/companies/[slug]/route-5d7bc62805d0d7bd.js"
     ],
-    "/api/compare/route": [
+    "/layout": [
       "static/chunks/webpack-1017649d66d1259f.js",
       "static/chunks/4bd1b696-c023c6e3521b1417.js",
       "static/chunks/255-98a0bdaa30757bda.js",
       "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/chunks/app/api/compare/route-5d7bc62805d0d7bd.js"
+      "static/css/8a62aad5e38982ae.css",
+      "static/chunks/app/layout-f9163511bc5d9bfa.js"
     ],
     "/api/ingest-salary/route": [
       "static/chunks/webpack-1017649d66d1259f.js",

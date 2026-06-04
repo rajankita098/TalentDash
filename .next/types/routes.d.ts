@@ -5,7 +5,7 @@ type AppRoutes = "/companies/[slug]" | "/compare" | "/salaries"
 type AppRouteHandlerRoutes = "/api/companies/[slug]" | "/api/compare" | "/api/ingest-salary" | "/api/salaries"
 type PageRoutes = never
 type LayoutRoutes = "/"
-type RedirectRoutes = never
+type RedirectRoutes = "/"
 type RewriteRoutes = never
 type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRoutes | AppRouteHandlerRoutes
 

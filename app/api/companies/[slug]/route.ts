@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Salary } from '@prisma/client'; // Import the Prisma type
 
 export async function GET(
   request: NextRequest,
@@ -23,7 +24,7 @@ export async function GET(
       );
     }
 
-    const salaries = company.salaries;
+    const salaries: Salary[] = company.salaries; // Explicitly type the array
     const count = salaries.length;
 
     const getMedian = (values: number[]) => {
@@ -34,7 +35,7 @@ export async function GET(
       return (sorted[half - 1] + sorted[half]) / 2.0;
     };
 
-    // FIX: Convert database bigint values to Numbers safely for your math formulas
+    // Now TypeScript knows 's' is of type Salary
     const medianBase = getMedian(salaries.map((s) => Number(s.baseSalary)));
     const medianStock = getMedian(salaries.map((s) => Number(s.stock || 0n)));
     const medianTotal = getMedian(salaries.map((s) => Number(s.totalCompensation)));
@@ -52,7 +53,6 @@ export async function GET(
         medianStock,
         medianTotal,
       },
-      // Convert your bigint fields to clean string arrays for response transport
       salaries: salaries.map((s) => ({
         id: s.id,
         role: s.role,
@@ -66,7 +66,6 @@ export async function GET(
       }))
     };
 
-    // --- FS3: ATTACH EDGE-PROXY CACHE-CONTROL HEADERS ---
     return new Response(JSON.stringify(payload), {
       status: 200,
       headers: {
