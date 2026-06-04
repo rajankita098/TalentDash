@@ -1,78 +1,35 @@
 {
   "pages": {
-    "/_not-found/page": [
-      "static/chunks/webpack-1017649d66d1259f.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-98a0bdaa30757bda.js",
-      "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/chunks/app/_not-found/page-1ae50874979a564e.js"
-    ],
-    "/api/compare/route": [
-      "static/chunks/webpack-1017649d66d1259f.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-98a0bdaa30757bda.js",
-      "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/chunks/app/api/compare/route-5d7bc62805d0d7bd.js"
-    ],
-    "/api/companies/[slug]/route": [
-      "static/chunks/webpack-1017649d66d1259f.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-98a0bdaa30757bda.js",
-      "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/chunks/app/api/companies/[slug]/route-5d7bc62805d0d7bd.js"
-    ],
     "/layout": [
-      "static/chunks/webpack-1017649d66d1259f.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-98a0bdaa30757bda.js",
-      "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/css/8a62aad5e38982ae.css",
-      "static/chunks/app/layout-f9163511bc5d9bfa.js"
-    ],
-    "/api/ingest-salary/route": [
-      "static/chunks/webpack-1017649d66d1259f.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-98a0bdaa30757bda.js",
-      "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/chunks/app/api/ingest-salary/route-5d7bc62805d0d7bd.js"
-    ],
-    "/api/salaries/route": [
-      "static/chunks/webpack-1017649d66d1259f.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-98a0bdaa30757bda.js",
-      "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/chunks/app/api/salaries/route-5d7bc62805d0d7bd.js"
-    ],
-    "/compare/page": [
-      "static/chunks/webpack-1017649d66d1259f.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-98a0bdaa30757bda.js",
-      "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/chunks/app/compare/page-c7a7fa91b72fde14.js"
-    ],
-    "/salaries/page": [
-      "static/chunks/webpack-1017649d66d1259f.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-98a0bdaa30757bda.js",
-      "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/chunks/151-4683061931f75a38.js",
-      "static/chunks/app/salaries/page-d3f13a96938c4481.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
     ],
     "/companies/[slug]/loading": [
-      "static/chunks/webpack-1017649d66d1259f.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-98a0bdaa30757bda.js",
-      "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/chunks/app/companies/[slug]/loading-5d7bc62805d0d7bd.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/companies/[slug]/loading.js"
     ],
     "/companies/[slug]/page": [
-      "static/chunks/webpack-1017649d66d1259f.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-98a0bdaa30757bda.js",
-      "static/chunks/main-app-682b115844d0a6a0.js",
-      "static/chunks/151-4683061931f75a38.js",
-      "static/chunks/356-1143d17a0ca27254.js",
-      "static/chunks/app/companies/[slug]/page-79039d26b0f98163.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/companies/[slug]/page.js"
+    ],
+    "/compare/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/compare/page.js"
+    ],
+    "/api/compare/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/compare/route.js"
+    ],
+    "/api/salaries/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/salaries/route.js"
     ]
   }
 }

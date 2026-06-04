@@ -1,10 +1,6 @@
 {
   "/api/compare/route": "app/api/compare/route.js",
-  "/api/companies/[slug]/route": "app/api/companies/[slug]/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/ingest-salary/route": "app/api/ingest-salary/route.js",
   "/api/salaries/route": "app/api/salaries/route.js",
-  "/compare/page": "app/compare/page.js",
-  "/salaries/page": "app/salaries/page.js",
-  "/companies/[slug]/page": "app/companies/[slug]/page.js"
+  "/companies/[slug]/page": "app/companies/[slug]/page.js",
+  "/compare/page": "app/compare/page.js"
 }

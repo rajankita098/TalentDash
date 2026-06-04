@@ -1,6 +1,18 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Salary } from '@prisma/client'; // Import the Prisma type
+
+// Define the shape of a salary object as returned by Prisma (simplified)
+type SalaryShape = {
+  id: string;
+  role: string;
+  level: string;
+  location: string;
+  currency: string;
+  experienceYears: number;
+  baseSalary: bigint;
+  stock: bigint | null;
+  totalCompensation: bigint;
+};
 
 export async function GET(
   request: NextRequest,
@@ -24,20 +36,22 @@ export async function GET(
       );
     }
 
-    const salaries: Salary[] = company.salaries; // Explicitly type the array
+    // --- COMPUTING TRUE MEDIAN NODES (SCHEMA SPECIFIC) ---
+    const salaries = company.salaries as SalaryShape[]; // Type assertion
     const count = salaries.length;
 
     const getMedian = (values: number[]) => {
       if (values.length === 0) return 0;
+      // Create a copy before sorting to avoid mutating the original array
       const sorted = [...values].sort((a, b) => a - b);
       const half = Math.floor(sorted.length / 2);
       if (sorted.length % 2 !== 0) return sorted[half];
       return (sorted[half - 1] + sorted[half]) / 2.0;
     };
 
-    // Now TypeScript knows 's' is of type Salary
+    // Now 's' is implicitly typed as SalaryShape thanks to the assertion
     const medianBase = getMedian(salaries.map((s) => Number(s.baseSalary)));
-    const medianStock = getMedian(salaries.map((s) => Number(s.stock || 0n)));
+    const medianStock = getMedian(salaries.map((s) => Number(s.stock ?? 0n)));
     const medianTotal = getMedian(salaries.map((s) => Number(s.totalCompensation)));
 
     const payload = {
@@ -61,21 +75,23 @@ export async function GET(
         currency: s.currency,
         experienceYears: s.experienceYears,
         baseSalary: s.baseSalary.toString(),
-        stock: (s.stock || 0n).toString(),
+        stock: (s.stock ?? 0n).toString(),
         totalCompensation: s.totalCompensation.toString(),
-      }))
+      })),
     };
 
+    // --- FS3 CRITICAL: ATTACH EXACT EDGE-PROXY CACHE-CONTROL HEADERS via standard Response ---
     return new Response(JSON.stringify(payload), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
+        // FS3 Rule: Cache at the Edge CDN for 1 hour, serve stale up to 24 hours while revalidating
         'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400',
       },
     });
-
   } catch (error) {
-    console.error("Company api pipeline failure:", error);
+    console.error('Company api pipeline failure:', error);
+
     return new Response(
       JSON.stringify({ error: true, message: 'Internal server error processing company parameters' }),
       {
