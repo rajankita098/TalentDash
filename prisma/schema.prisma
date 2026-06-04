@@ -1,14 +1,53 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
 }
 
-generator client {
-  provider = "prisma-client-js"
+model Company {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  slug           String   @unique
+  normalizedName String   @map("normalized_name")
+  industry       String
+  headquarters   String
+  foundedYear    Int?     @map("founded_year")
+  headcountRange String?  @map("headcount_range")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  salaries Salary[]                     // ← ADD THIS LINE
+
+  @@index([normalizedName])
+}
+
+model Salary {
+  id                String   @id @default(uuid()) @db.Uuid
+  companyId         String   @map("company_id")
+  role              String
+  level             Level
+  location          String
+  currency          Currency
+  experienceYears   Int      @map("experience_years")
+  baseSalary        BigInt   @map("base_salary")
+  bonus             BigInt
+  stock             BigInt
+  totalCompensation BigInt   @map("total_compensation")
+  source            Source   @default(SCRAPED)
+  confidenceScore   Float    @map("confidence_score")
+  isVerified        Boolean  @default(false) @map("is_verified")
+  submittedAt       DateTime @default(now()) @map("submitted_at")
+
+  company Company @relation(fields: [companyId], references: [id])   // ← ADD THIS LINE
+
+
+  @@index([role])
+  @@index([location])
+  @@index([level])
+  @@index([totalCompensation])
+  @@index([submittedAt])
 }
 
 enum Level {
@@ -36,49 +75,4 @@ enum Source {
   CONTRIBUTOR
   SCRAPED
   AI_INFERRED
-}
-
-model Company {
-  id              String   @id @default(uuid()) @db.Uuid
-  name            String   // Display name (e.g., "Google India")
-  slug            String   @unique // URL matching slug (e.g., "google")
-  normalizedName  String   @map("normalized_name") // Lowercase indexed for exact lookups
-  industry        String
-  headquarters    String
-  foundedYear     Int?     @map("founded_year")
-  headcountRange  String?  @map("headcount_range")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  // One-to-many relation block
-  salaries        Salary[]
-
-  @@index([normalizedName])
-}
-
-model Salary {
-  id                String   @id @default(uuid())
-  companyId         String
-  role              String
-  level             Level
-  location          String
-  currency          Currency
-  experienceYears   Int
-  baseSalary        BigInt
-  bonus             BigInt
-  stock             BigInt
-  totalCompensation BigInt
-  source            Source   @default(SCRAPED)
-  confidenceScore   Float
-  isVerified        Boolean  @default(false)
-  submittedAt       DateTime @default(now())
-
-  company           Company  @relation(fields: [companyId], references: [id])
-
-  // Performance Optimization Indexes for B3
-  @@index([role])
-  @@index([location])
-  @@index([level])
-  @@index([totalCompensation])
-  @@index([submittedAt])
 }

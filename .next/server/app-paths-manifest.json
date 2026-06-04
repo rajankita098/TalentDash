@@ -1,6 +1,0 @@
-{
-  "/api/compare/route": "app/api/compare/route.js",
-  "/api/salaries/route": "app/api/salaries/route.js",
-  "/companies/[slug]/page": "app/companies/[slug]/page.js",
-  "/compare/page": "app/compare/page.js"
-}

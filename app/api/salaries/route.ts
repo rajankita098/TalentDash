@@ -1,4 +1,4 @@
-import { prisma } from '../../../lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 // Helper to serialize BigInt fields safely to JSON strings
 function serializeBigInt(obj: any): any {
@@ -16,9 +16,8 @@ export async function GET(request: Request) {
     // 1. Extract and normalize Pagination parameters
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     let limit = parseInt(searchParams.get('limit') || '10', 10);
-    if (limit > 100) limit = 100; // Strict guard clause safety ceiling
+    if (limit > 100) limit = 100;
     if (limit < 1) limit = 25;
-    
     const skip = (page - 1) * limit;
 
     // 2. Extract Filters
@@ -29,20 +28,18 @@ export async function GET(request: Request) {
     const currencyQuery = searchParams.get('currency');
     const sortQuery = searchParams.get('sort') || 'date_desc';
 
-    // 3. Construct Dynamic Prisma Where Clause Conditions
+    // 3. Construct Dynamic Prisma Where Clause
     const whereClause: any = {};
 
-    // Filter by Company via relational attributes (case-insensitive partial match)
     if (companyQuery) {
       whereClause.company = {
         name: {
           contains: companyQuery,
-          mode: 'insensitive', // Translates directly to ILIKE in PostgreSQL
+          mode: 'insensitive',
         },
       };
     }
 
-    // Filter by Role (case-insensitive partial match)
     if (roleQuery) {
       whereClause.role = {
         contains: roleQuery,
@@ -50,7 +47,6 @@ export async function GET(request: Request) {
       };
     }
 
-    // Filter by Location (case-insensitive partial match)
     if (locationQuery) {
       whereClause.location = {
         contains: locationQuery,
@@ -58,7 +54,6 @@ export async function GET(request: Request) {
       };
     }
 
-    // Exact matches for Enums
     if (levelQuery) {
       whereClause.level = levelQuery;
     }
@@ -66,8 +61,8 @@ export async function GET(request: Request) {
       whereClause.currency = currencyQuery;
     }
 
-    // 4. Construct Sort Ordering Dictionary
-    let orderBy: any = { submittedAt: 'desc' }; // Default fallback: date_desc
+    // 4. Sort Ordering
+    let orderBy: any = { submittedAt: 'desc' };
     if (sortQuery === 'total_comp_desc') {
       orderBy = { totalCompensation: 'desc' };
     } else if (sortQuery === 'total_comp_asc') {
@@ -76,7 +71,7 @@ export async function GET(request: Request) {
       orderBy = { submittedAt: 'desc' };
     }
 
-    // 5. Query data and counts concurrently using parallel promises to prevent database connection timeouts
+    // 5. Query data and count concurrently
     const [salaries, totalCount] = await Promise.all([
       prisma.salary.findMany({
         where: whereClause,
@@ -89,8 +84,8 @@ export async function GET(request: Request) {
             },
           },
         },
-        orderBy: orderBy,
-        skip: skip,
+        orderBy,
+        skip,
         take: limit,
       }),
       prisma.salary.count({ where: whereClause }),
@@ -102,31 +97,24 @@ export async function GET(request: Request) {
       data: salaries,
       meta: {
         total: totalCount,
-        page: page,
-        limit: limit,
-        totalPages: totalPages,
+        page,
+        limit,
+        totalPages,
       },
     });
 
-    // 6. Return Structured Paginated Contract Payload with FS3 Edge CDN Cache Headers
     return new Response(JSON.stringify(payload), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        // FS3 Rule: Cache on Edge for 5 mins, allow stale serving for 1 hour during revalidation
         'Cache-Control': 's-maxage=300, stale-while-revalidate=3600',
       },
     });
-
   } catch (error: any) {
-    console.error("Query pipeline failure:", error);
-    
+    console.error('Query pipeline failure:', error);
     return new Response(
-      JSON.stringify({ error: true, message: "Internal directory lookup runtime failure" }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: true, message: 'Internal directory lookup runtime failure' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

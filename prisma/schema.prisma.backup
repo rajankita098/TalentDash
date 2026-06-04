@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Level {
+  L3
+  L4
+  L5
+  L6
+  SDE_I
+  SDE_II
+  SDE_III
+  STAFF
+  PRINCIPAL
+  IC4
+  IC5
+}
+
+enum Currency {
+  INR
+  USD
+  GBP
+  EUR
+}
+
+enum Source {
+  CONTRIBUTOR
+  SCRAPED
+  AI_INFERRED
+}
+
+model Company {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String
+  slug            String   @unique
+  normalizedName  String   @map("normalized_name")
+  industry        String
+  headquarters    String
+  foundedYear     Int?     @map("founded_year")
+  headcountRange  String?  @map("headcount_range")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  salaries Salary[]
+
+  @@index([normalizedName])
+}
+
+model Salary {
+  id                String   @id @default(uuid()) @db.Uuid
+  companyId         String   @map("company_id") @db.Uuid
+  role              String
+  level             Level
+  location          String
+  currency          Currency
+  experienceYears   Int      @map("experience_years")
+  baseSalary        BigInt   @map("base_salary")
+  bonus             BigInt
+  stock             BigInt
+  totalCompensation BigInt   @map("total_compensation")
+  source            Source   @default(SCRAPED)
+  confidenceScore   Float    @map("confidence_score")
+  isVerified        Boolean  @default(false) @map("is_verified")
+  submittedAt       DateTime @default(now()) @map("submitted_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([role])
+  @@index([location])
+  @@index([level])
+  @@index([totalCompensation])
+  @@index([submittedAt])
+}
