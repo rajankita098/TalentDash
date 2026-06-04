@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { SalaryRecord } from '@/types'; // Import your established structural data model contract type
 
 export async function GET(
   request: NextRequest,
@@ -35,9 +36,10 @@ export async function GET(
       return (values[half - 1] + values[half]) / 2.0;
     };
 
-    const medianBase = getMedian(salaries.map((s) => Number(s.baseSalary)));
-    const medianStock = getMedian(salaries.map((s) => Number(s.stock)));
-    const medianTotal = getMedian(salaries.map((s) => Number(s.totalCompensation)));
+    // FIX: Explicitly type 's' as your known SalaryRecord interface to pass the strict checker arrays matrix smoothly!
+    const medianBase = getMedian(salaries.map((s: SalaryRecord) => Number(s.baseSalary)));
+    const medianStock = getMedian(salaries.map((s: SalaryRecord) => Number(s.stock)));
+    const medianTotal = getMedian(salaries.map((s: SalaryRecord) => Number(s.totalCompensation)));
 
     const payload = {
       company: {
@@ -52,7 +54,7 @@ export async function GET(
         medianStock,
         medianTotal,
       },
-      salaries: salaries.map(s => ({
+      salaries: salaries.map((s: SalaryRecord) => ({
         id: s.id,
         role: s.role,
         level: s.level,

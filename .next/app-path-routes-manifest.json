@@ -1,0 +1,10 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/companies/[slug]/route": "/api/companies/[slug]",
+  "/api/compare/route": "/api/compare",
+  "/api/ingest-salary/route": "/api/ingest-salary",
+  "/api/salaries/route": "/api/salaries",
+  "/compare/page": "/compare",
+  "/salaries/page": "/salaries",
+  "/companies/[slug]/page": "/companies/[slug]"
+}
