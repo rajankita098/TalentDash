@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // Simple regex utility to safely identify true PostgreSQL UUID patterns
@@ -9,47 +9,56 @@ const isUUID = (val: string) => {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.nextUrl);
-    const s1 = searchParams.get('s1');
-    const s2 = searchParams.get('s2');
+    const { searchParams } = new URL(request.url);
+    const s1 = searchParams.get('s1')?.trim();
+    const s2 = searchParams.get('s2')?.trim();
 
-    // 1. Guard Clauses: Ensure parameters are active
-    if (!s1 || !s2) {
-      return NextResponse.json(
-        { error: true, message: "Missing required query string identifiers s1 and s2" },
-        { status: 400 }
+    // 1. Edge Case Guard: Ensure both components are selected and not left on a placeholder drop-down node
+    if (!s1 || !s2 || s1 === 'none' || s2 === 'none' || s1 === '' || s2 === '') {
+      return new Response(
+        JSON.stringify({ 
+          error: true, 
+          message: "Comparison Selection Incomplete: Please select two different records or companies to calculate performance deltas." 
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // 2. Identity Protection Check
-    if (s1 === s2) {
-      return NextResponse.json(
-        { error: true, message: "Identity Protection: Cannot compare an item node against itself" },
-        { status: 400 }
+    // 2. Identity Protection Check: Direct query string value collision match
+    if (s1.toLowerCase() === s2.toLowerCase()) {
+      return new Response(
+        JSON.stringify({ 
+          error: true, 
+          message: "Identity Protection: Cannot compare a company or salary profile directly against itself. Please select a different entity." 
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     let record1: any = null;
     let record2: any = null;
 
-    // --- SMART RESOLUTION PIPELINE FOR DATA MATRIXES ---
+    // --- SMART RESOLUTION PIPELINE FOR DATA MATRICES ---
     
-    // Fetch Node 1 (Check if it's a UUID or a Company Slug)
+    // Fetch Node 1
     if (isUUID(s1)) {
       record1 = await prisma.salary.findUnique({
         where: { id: s1 },
         include: { company: true }
       });
     } else {
-      // It's a corporate slug string (like 'flipkart')! Fetch its highest paying or first record entry.
       record1 = await prisma.salary.findFirst({
-        where: { company: { slug: s1 } },
+        where: { 
+          company: { 
+            slug: { equals: s1, mode: 'insensitive' } 
+          } 
+        },
         include: { company: true },
         orderBy: { totalCompensation: 'desc' }
       });
     }
 
-    // Fetch Node 2 (Check if it's a UUID or a Company Slug)
+    // Fetch Node 2
     if (isUUID(s2)) {
       record2 = await prisma.salary.findUnique({
         where: { id: s2 },
@@ -57,17 +66,35 @@ export async function GET(request: NextRequest) {
       });
     } else {
       record2 = await prisma.salary.findFirst({
-        where: { company: { slug: s2 } },
+        where: { 
+          company: { 
+            slug: { equals: s2, mode: 'insensitive' } 
+          } 
+        },
         include: { company: true },
         orderBy: { totalCompensation: 'desc' }
       });
     }
 
+    // 3. Post-Fetch Cross-Validation: Check if the separate database lookups resolved to the same corporate ID node
+    if (record1 && record2 && record1.companyId === record2.companyId) {
+      return new Response(
+        JSON.stringify({
+          error: true,
+          message: "Identity Protection: Both selection tracks point to the same company node profile. Please choose a different company to run a true variance calculation."
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     // 4. Validate findings before computing deltas
     if (!record1 || !record2) {
-      return NextResponse.json(
-        { error: true, message: "One or both comparative records could not be located in Neon PostgreSQL" },
-        { status: 404 }
+      return new Response(
+        JSON.stringify({ 
+          error: true, 
+          message: "One or both comparative records could not be located in Neon PostgreSQL matching those criteria strings." 
+        }),
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -83,7 +110,7 @@ export async function GET(request: NextRequest) {
           currency: record1.currency,
           experienceYears: record1.experienceYears,
           baseSalary: record1.baseSalary.toString(),
-          stock: record1.stock.toString(),
+          stock: (record1.stock || 0n).toString(),
           totalCompensation: record1.totalCompensation.toString(),
           company: record1.company
         },
@@ -95,20 +122,23 @@ export async function GET(request: NextRequest) {
           currency: record2.currency,
           experienceYears: record2.experienceYears,
           baseSalary: record2.baseSalary.toString(),
-          stock: record2.stock.toString(),
+          stock: (record2.stock || 0n).toString(),
           totalCompensation: record2.totalCompensation.toString(),
           company: record2.company
         }
       }
     };
 
-    return NextResponse.json(payload, { status: 200 });
+    return new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
 
   } catch (error: any) {
     console.error("Comparison utility failure:", error);
-    return NextResponse.json(
-      { error: true, message: "Internal Server Error parsing delta vectors" },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ error: true, message: "Internal Server Error parsing delta vectors" }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

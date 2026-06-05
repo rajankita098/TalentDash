@@ -9,17 +9,9 @@ const nextConfig = {
       },
     ],
   },
-
-  // 🏡 HOME PAGE REQUIREMENT: Automatically redirect root URL (/) straight to your salaries ledger
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/salaries',
-        permanent: true,
-      },
-    ];
-  },
+  
+  // 🏡 LANDING PAGE UPDATE: We removed the old redirects array completely 
+  // so Next.js serves your beautiful new app/page.tsx landing layout right at the root domain!
 };
 
 export default nextConfig;
