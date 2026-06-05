@@ -1,6 +1,6 @@
 # 🚀 TalentDash — Global Tech Talent Ledger
 
-**Live Production Deployment Link:** [https://talent-dash-wlc9.vercel.app/salaries](https://talent-dash-wlc9.vercel.app/salaries)
+**Live Production Deployment Link:** [https://talent-dash-fvdn.vercel.app/](https://talent-dash-fvdn.vercel.app/)
 
 TalentDash is a hyper-optimized, high-performance full-stack web application built with **Next.js 15 (App Router)** and **Prisma ORM**, backed by a serverless **Neon PostgreSQL** database layer. The platform serves as a machine-readable directory and real-time analytical dashboard aggregating base, stock, and total compensation tracks for software engineering roles globally.
 

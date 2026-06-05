@@ -1,5 +1,6 @@
 import './globals.css'; // Add this exact import path rule on line 1
 import type { Metadata } from 'next';
+import Navbar from '@/components/Navbar';
 
 // --- F5: SEO METADATA CONFIGURATION CORE ---
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
+        <Navbar />
         {children}
       </body>
     </html>
