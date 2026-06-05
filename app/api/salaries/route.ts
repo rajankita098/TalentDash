@@ -1,120 +1,106 @@
+// app/api/salaries/route.ts
 import { prisma } from '@/lib/prisma';
+import { NextRequest } from 'next/server';
 
-// Helper to serialize BigInt fields safely to JSON strings
-function serializeBigInt(obj: any): any {
-  return JSON.parse(
-    JSON.stringify(obj, (key, value) =>
-      typeof value === 'bigint' ? value.toString() : value
-    )
-  );
-}
-
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-
-    // 1. Extract and normalize Pagination parameters
+    const searchParams = request.nextUrl.searchParams;
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    let limit = parseInt(searchParams.get('limit') || '10', 10);
+    let limit = parseInt(searchParams.get('limit') || '25', 10);
     if (limit > 100) limit = 100;
-    if (limit < 1) limit = 25;
     const skip = (page - 1) * limit;
 
-    // 2. Extract Filters
+    const where: any = {};
+
+    // --- Company filter: get matching company IDs first ---
     const companyQuery = searchParams.get('company');
-    const roleQuery = searchParams.get('role');
-    const levelQuery = searchParams.get('level');
-    const locationQuery = searchParams.get('location');
-    const currencyQuery = searchParams.get('currency');
-    const sortQuery = searchParams.get('sort') || 'date_desc';
-
-    // 3. Construct Dynamic Prisma Where Clause
-    const whereClause: any = {};
-
-    if (companyQuery) {
-      whereClause.company = {
-        name: {
-          contains: companyQuery,
-          mode: 'insensitive',
+    if (companyQuery && companyQuery.trim() !== '') {
+      const matchingCompanies = await prisma.company.findMany({
+        where: {
+          name: {
+            contains: companyQuery.trim(),
+            mode: 'insensitive',
+          },
         },
-      };
+        select: { id: true },
+      });
+      const companyIds = matchingCompanies.map(c => c.id);
+      if (companyIds.length === 0) {
+        // No matching companies → return empty result immediately
+        return Response.json({
+          data: [],
+          meta: { total: 0, page, limit, totalPages: 0 },
+        });
+      }
+      where.companyId = { in: companyIds };
     }
 
-    if (roleQuery) {
-      whereClause.role = {
-        contains: roleQuery,
-        mode: 'insensitive',
-      };
+    // --- Role filter ---
+    const roleQuery = searchParams.get('role');
+    if (roleQuery && roleQuery !== 'ALL') {
+      where.role = roleQuery;
     }
 
-    if (locationQuery) {
-      whereClause.location = {
-        contains: locationQuery,
-        mode: 'insensitive',
-      };
+    // --- Location filter ---
+    const locationQuery = searchParams.get('location');
+    if (locationQuery && locationQuery !== 'ALL') {
+      where.location = locationQuery;
     }
 
+    // --- Level filter ---
+    const levelQuery = searchParams.get('level');
     if (levelQuery) {
-      whereClause.level = levelQuery;
+      const levels = levelQuery.split(',');
+      where.level = { in: levels };
     }
+
+    // --- Currency filter ---
+    const currencyQuery = searchParams.get('currency');
     if (currencyQuery) {
-      whereClause.currency = currencyQuery;
+      where.currency = currencyQuery;
     }
 
-    // 4. Sort Ordering
+    // --- Sorting ---
     let orderBy: any = { submittedAt: 'desc' };
-    if (sortQuery === 'total_comp_desc') {
-      orderBy = { totalCompensation: 'desc' };
-    } else if (sortQuery === 'total_comp_asc') {
-      orderBy = { totalCompensation: 'asc' };
-    } else if (sortQuery === 'date_desc') {
-      orderBy = { submittedAt: 'desc' };
-    }
+    const direction = searchParams.get('direction');
+    if (direction === 'asc') orderBy = { totalCompensation: 'asc' };
+    if (direction === 'desc') orderBy = { totalCompensation: 'desc' };
 
-    // 5. Query data and count concurrently
-    const [salaries, totalCount] = await Promise.all([
+    // --- Fetch salaries and total count ---
+    const [salaries, total] = await Promise.all([
       prisma.salary.findMany({
-        where: whereClause,
+        where,
         include: {
           company: {
-            select: {
-              name: true,
-              slug: true,
-              industry: true,
-            },
+            select: { id: true, name: true, slug: true, industry: true },
           },
         },
         orderBy,
         skip,
         take: limit,
       }),
-      prisma.salary.count({ where: whereClause }),
+      prisma.salary.count({ where }),
     ]);
 
-    const totalPages = Math.ceil(totalCount / limit);
+    // Serialize BigInt values
+    const serialized = JSON.parse(
+      JSON.stringify(salaries, (_, v) => (typeof v === 'bigint' ? v.toString() : v))
+    );
 
-    const payload = serializeBigInt({
-      data: salaries,
+    return Response.json({
+      data: serialized,
       meta: {
-        total: totalCount,
+        total,
         page,
         limit,
-        totalPages,
+        totalPages: Math.ceil(total / limit),
       },
     });
-
-    return new Response(JSON.stringify(payload), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 's-maxage=300, stale-while-revalidate=3600',
-      },
-    });
-  } catch (error: any) {
-    console.error('Query pipeline failure:', error);
-    return new Response(
-      JSON.stringify({ error: true, message: 'Internal directory lookup runtime failure' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+  } catch (error) {
+    console.error('API /salaries error:', error);
+    return Response.json(
+      { error: true, message: 'Internal server error' },
+      { status: 500 }
     );
   }
 }
